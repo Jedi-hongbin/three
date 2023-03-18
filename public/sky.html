@@ -1,0 +1,280 @@
+<!--
+ * @Author: hongbin
+ * @Date: 2023-03-11 14:56:38
+ * @LastEditors: hongbin
+ * @LastEditTime: 2023-03-11 14:56:40
+ * @Description: 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>charco</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="main.css">
+
+    <script src="js/build/three.min.js"></script>
+    <script src="js/controls/OrbitControls.js"></script>
+    <script src="js/objects/Sky.js"></script>
+    <script src="js/WebGL.js"></script>
+    <script src="js/libs/dat.gui.min.js"></script>
+
+    <script language="JavaScript" src="js/suncalc.js"></script>
+
+    <script language="JavaScript" src="js/moment.js"></script>
+    <script language="JavaScript" src="js/moment-timezone-with-data-10-year-range.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+</head>
+
+<body>
+<div class="current">
+        <p id="loc">Calculating...</p>
+        <p id="date"></p>
+        <p id="sunpos"></p>
+        <p>----------------</p>
+        <p id="antiloc"></p>
+        <p id="antidate"></p>
+        <p id="antisunpos"></p>
+</div>
+
+<script>
+    var lat=null;
+    var long=null;
+    var antilat=null;
+    var antilong=null;
+    var antitz=null;
+    var herenow=moment();
+    var antiherenow=moment();
+    var sunPos;
+    var antisunPos;
+    var ele3js = 0.3;
+    var azi3js = 0.3;
+
+    function r2d(radians){
+      var pi = Math.PI;
+      return radians * (180/pi);
+    }
+
+    function d2r(degress){
+      var pi = Math.PI;
+      return degrees * (pi/180);
+    }
+
+    function round(value, decimals) {
+      return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+    }
+
+
+    function geoSuccess(position) {
+
+    if(!!navigator.geolocation) {
+
+        navigator.geolocation.getCurrentPosition(function(position) {
+
+            lat = round(position.coords.latitude,3);
+            long = round(position.coords.longitude, 3);
+            const now = new Date();
+            const antinow = new Date();
+
+            setTimeout(geoSuccess, 3000);
+            antilat  = lat * -1;
+            antilong = 180-Math.abs(long);
+            if (Math.sign(long)==1) antilong = antilong*-1;
+
+            // get today's sunlight times
+            var times = SunCalc.getTimes(antinow, antilat, antilong);
+            //console.log(times);
+
+            lat = round(position.coords.latitude, 3);
+            long = round(position.coords.longitude, 3);
+
+            //Bogotà
+            //lat = 4.598699
+            //long = -74.075848
+
+            // var d = new Date();
+            var d = new Date("September 14, 2019 12:43:00");
+
+            antilat = lat * -1;
+            antilong = 180 - Math.abs(long);
+            if (Math.sign(long) == 1) antilong = antilong * -1;
+
+            document.getElementById("loc").innerHTML = "Current position: " + lat + ", " + long;
+            document.getElementById("date").innerHTML = "Date/Time: " + d;
+
+
+            //now time to use with SunCalc
+
+            //herenow = moment();
+            herenow = d;
+            console.log("HERENOW", herenow);
+
+            // get position of the sun (azimuth and altitude) now
+            sunPos = SunCalc.getPosition(herenow, lat, long);
+            console.log("sunPos", sunPos);
+
+            //fill text inside DOM
+            var _sunPos = document.getElementById("sunpos");
+            _sunPos.innerHTML = "Sun position: Elevation:" + r2d(sunPos.altitude) + " - Azimuth: " + r2d(sunPos.azimuth + 3.141516);
+
+            var eledeg = r2d(sunPos.altitude);
+            if (eledeg>0) ele3js = 0.5 - eledeg*0.00555555555;
+            if (eledeg<0) ele3js = 0.5 - Math.abs(eledeg)*0.00555555555;
+
+            var azideg = r2d(sunPos.azimuth + 3.141516);
+            azi3js = azideg * 0.00277777777;
+
+            document.getElementById("antiloc").innerHTML = "ThreeJS position: " + ele3js + ", " + azi3js;
+
+
+            console.log("elevation", eledeg);
+            console.log("azimuth", azideg);
+            console.log("elevation3js", ele3js);
+            console.log("azimuth3js", azi3js);
+
+
+        });
+
+    } else {
+        //document.getElementById('lat').innerHTML = 'No Geolocation Support.';
+    }
+
+}
+
+
+
+    if ( WEBGL.isWebGLAvailable() === false ) {
+        document.body.appendChild( WEBGL.getWebGLErrorMessage() );
+    }
+
+    var camera, controls, scene, renderer;
+    var sky, sunSphere;
+
+    geoSuccess();
+    init();
+    render();
+
+    function initSky() {
+
+        // Add Sky
+        sky = new THREE.Sky();
+        sky.scale.setScalar( 450000 );
+        scene.add( sky );
+
+        // Add Sun Helper
+        sunSphere = new THREE.Mesh(
+            new THREE.SphereBufferGeometry( 20000, 16, 8 ),
+            new THREE.MeshBasicMaterial( { color: 0xffffff } )
+        );
+        sunSphere.position.y = - 700000;
+        sunSphere.visible = false;
+        scene.add( sunSphere );
+
+        /// GUI
+
+
+        var effectController = {
+            turbidity: 10,
+            rayleigh: 2,
+            mieCoefficient: 0.005,
+            mieDirectionalG: 0.8,
+            luminance: 1,
+            inclination: ele3js, //1.085, //ele, // 0.8985033172272991, // elevation / inclination
+            azimuth: azi3js, //0.97, //azi, // 0.740544002807376, // Facing front,
+            sun: ! true
+        };
+
+        var distance = 400000;
+
+        function guiChanged() {
+
+            var uniforms = sky.material.uniforms;
+            uniforms[ "turbidity" ].value = effectController.turbidity;
+            uniforms[ "rayleigh" ].value = effectController.rayleigh;
+            uniforms[ "luminance" ].value = effectController.luminance;
+            uniforms[ "mieCoefficient" ].value = effectController.mieCoefficient;
+            uniforms[ "mieDirectionalG" ].value = effectController.mieDirectionalG;
+
+        //    var theta = Math.PI * ( effectController.inclination - 0.5 );
+        //    var phi = 2 * Math.PI * ( effectController.azimuth - 0.5 );
+
+            var theta = Math.PI * ( effectController.inclination);
+            var phi = 2 * Math.PI * ( effectController.azimuth);
+
+           // var theta = Math.PI * ( ele3js - 0.5 );
+        //    var phi = 2 * Math.PI * ( azi3js - 0.5 );
+
+            sunSphere.position.x = distance * Math.cos( phi );
+            sunSphere.position.y = distance * Math.sin( phi ) * Math.sin( theta );
+            sunSphere.position.z = distance * Math.sin( phi ) * Math.cos( theta );
+
+            sunSphere.visible = effectController.sun;
+
+            uniforms[ "sunPosition" ].value.copy( sunSphere.position );
+
+            renderer.render( scene, camera );
+
+        }
+
+      var gui = new dat.GUI();
+
+        gui.add( effectController, "turbidity", 1.0, 20.0, 0.1 ).onChange( guiChanged );
+        gui.add( effectController, "rayleigh", 0.0, 4, 0.001 ).onChange( guiChanged );
+        gui.add( effectController, "mieCoefficient", 0.0, 0.1, 0.001 ).onChange( guiChanged );
+        gui.add( effectController, "mieDirectionalG", 0.0, 1, 0.001 ).onChange( guiChanged );
+        gui.add( effectController, "luminance", 0.0, 2 ).onChange( guiChanged );
+        gui.add( effectController, "inclination", 0, 1, 0.0001 ).onChange( guiChanged );
+        gui.add( effectController, "azimuth", 0, 1, 0.0001 ).onChange( guiChanged );
+        gui.add( effectController, "sun" ).onChange( guiChanged );
+        guiChanged();
+    }
+
+    function init() {
+
+        camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 100, 2000000 );
+        camera.position.set( 0, 0, 2000 );
+
+        //camera.setLens(20);
+        var point = new THREE.Vector3( 0,100,0 );
+        camera.lookAt( point );
+
+        scene = new THREE.Scene();
+
+        var helper = new THREE.GridHelper( 10000, 2, 0xffffff, 0xffffff );
+        // scene.add( helper );
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setPixelRatio( window.devicePixelRatio );
+        renderer.setSize( window.innerWidth, window.innerHeight-50 );
+        document.body.appendChild( renderer.domElement );
+
+        controls = new THREE.OrbitControls( camera, renderer.domElement );
+        controls.addEventListener( 'change', render );
+        //controls.maxPolarAngle = Math.PI / 2;
+        controls.enableZoom = false;
+        controls.enablePan = false;
+
+        initSky();
+
+        window.addEventListener( 'resize', onWindowResize, false );
+    }
+
+    function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        //camera.updateProjectionMatrix();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        render();
+    }
+
+    function render() {
+        renderer.render( scene, camera );
+    }
+
+        </script>
+
+    </body>
+
+</html>
+
+-->
