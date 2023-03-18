@@ -2,12 +2,12 @@
  * @Author: hongbin
  * @Date: 2023-03-17 22:24:58
  * @LastEditors: hongbin
- * @LastEditTime: 2023-03-18 18:21:11
+ * @LastEditTime: 2023-03-18 21:34:38
  * @Description:gif作为纹理
  */
 import Layout from "@/src/components/Three/Layout";
 import { ThreeHelper } from "@/src/ThreeHelper";
-import { GIFTexture } from "@/src/ThreeHelper/utils/GIFLoader/GIFTexture";
+import { GIFTexture } from "three-gif-texture";
 import { FC } from "react";
 import * as THREE from "three";
 
@@ -75,21 +75,4 @@ function init(helper: ThreeHelper) {
             helper.add(mesh);
         });
     }
-
-    // {
-    //     const map = imgLoader("/textures/screenshot.gif", "gif");
-
-    //     const mesh = new THREE.Mesh(
-    //         new THREE.PlaneGeometry(1, 1),
-    //         new THREE.MeshStandardMaterial({ map })
-    //     );
-
-    //     // mesh.onBeforeRender = () => {
-    //     //     //@ts-ignore
-    //     //     map.draw();
-    //     // };
-
-    //     helper.add(mesh);
-    //     mesh.position.x += 1;
-    // }
 }

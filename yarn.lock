@@ -2683,6 +2683,11 @@ text-table@^0.2.0:
   resolved "https://registry.npmmirror.com/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
   integrity sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==
 
+three-gif-texture@^1.0.15:
+  version "1.0.15"
+  resolved "https://registry.npmjs.org/three-gif-texture/-/three-gif-texture-1.0.15.tgz#8cea8b438f35d02fa83f218b9e3d88c748d32184"
+  integrity sha512-GzTF6OtgdjqKOF+AtA0WgLguJ8/iqE5u9KQQadmgWLusM2ML82XvQJuoGD6MqQalC33prUeaf2zqTWCP8fR4rw==
+
 three-mesh-bvh@^0.5.22:
   version "0.5.22"
   resolved "https://registry.npmmirror.com/three-mesh-bvh/-/three-mesh-bvh-0.5.22.tgz#9c20fbaba1f55c7afe3fe769a90c4605e3bd53ee"
