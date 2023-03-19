@@ -2,7 +2,7 @@
  * @Author: hongbin
  * @Date: 2023-02-12 09:43:47
  * @LastEditors: hongbin
- * @LastEditTime: 2023-03-17 14:34:55
+ * @LastEditTime: 2023-03-19 14:22:47
  * @Description: 观察者 ｜ 玩家 ｜ 用户
  */
 import { SyncRotate } from "@/src/components/Mobile/SyncRotate";
@@ -193,9 +193,9 @@ export class Observer {
     /**
      * 走的时候跳
      */
-    walk_jump() {
+    walk_jump(duration = 0.05) {
         if (this.swimming) return;
-        this.skeletonAnimation.toggle("walk_jump", 0.05, 2);
+        this.skeletonAnimation.toggle("walk_jump", duration, 2);
     }
 
     /**

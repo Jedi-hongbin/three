@@ -3,7 +3,7 @@
  * @Author: hongbin
  * @Date: 2023-01-31 14:58:51
  * @LastEditors: hongbin
- * @LastEditTime: 2023-03-19 12:27:00
+ * @LastEditTime: 2023-03-19 14:24:42
  * @Description: 物体跟随 + 碰撞检测
  */
 import Layout from "@/src/components/Three/Layout";
@@ -222,19 +222,17 @@ async function init(helper: ThreeHelper) {
         if (ObserverControl.climbing) return;
         if (keyBoardListener.accelerate) {
             ObserverControl.run_jump();
-        } else ObserverControl.walk_jump();
+        } else ObserverControl.walk_jump(0.2);
     });
 
     jumpControl.onEndJump(() => {
-        setTimeout(() => {
-            if (ObserverControl.climbing) return;
-            // 移动中
-            if (keyBoardListener.isMoving) {
-                if (keyBoardListener.accelerate) {
-                    ObserverControl.run(0.5);
-                } else ObserverControl.walk(0.5);
-            } else ObserverControl.idle(1.5);
-        }, 100);
+        if (ObserverControl.climbing) return;
+        // 移动中
+        if (keyBoardListener.isMoving) {
+            if (keyBoardListener.accelerate) {
+                ObserverControl.run(0.5);
+            } else ObserverControl.walk(0.5);
+        } else ObserverControl.idle(0.7);
     });
 
     // 翻跃的时候跳跃会造成视线偏离人物 设置不允许在翻跃的时候跳跃
@@ -367,7 +365,7 @@ async function init(helper: ThreeHelper) {
             !ObserverControl.flipJump &&
             !liftingPlatform.rising
         ) {
-            const fallDistance = fallHelper.computeDistance(delta) / 20;
+            const fallDistance = fallHelper.computeDistance(delta) / 5;
             preFall.set(0, -fallDistance, 0);
             ObserverControl.translate(preFall);
         } else fallHelper.resetTime();
