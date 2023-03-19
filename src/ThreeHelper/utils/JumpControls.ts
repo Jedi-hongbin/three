@@ -2,7 +2,7 @@
  * @Author: hongbin
  * @Date: 2023-02-05 20:58:59
  * @LastEditors: hongbin
- * @LastEditTime: 2023-03-10 14:45:51
+ * @LastEditTime: 2023-03-19 12:23:01
  * @Description:跳跃控制
  */
 
@@ -28,6 +28,16 @@ export class JumpControls {
 
     allow(call: () => boolean) {
         this._allow = call;
+    }
+
+    /**
+     * 头部遇到撞击
+     */
+    bumpHead() {
+        this.jumpSpeed = this.max;
+        this.jumping = false;
+        this._endJump();
+        console.log("bump");
     }
 
     /**

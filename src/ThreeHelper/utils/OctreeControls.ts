@@ -2,7 +2,7 @@
  * @Author: hongbin
  * @Date: 2023-02-02 13:37:11
  * @LastEditors: hongbin
- * @LastEditTime: 2023-03-16 13:21:50
+ * @LastEditTime: 2023-03-19 08:57:42
  * @Description: 八叉树控制器
  */
 import * as THREE from "three";
@@ -44,8 +44,8 @@ export class OctreeControls {
     private _normal = new Vector3();
     // octreeHelper: OctreeHelper;
 
-    constructor() {
-        this.useWebWorker();
+    constructor(params?: { useWebWorker?: boolean }) {
+        if (params && params.useWebWorker) this.useWebWorker();
         this.worldOctree = new Octree();
         this.playerCollider = new Capsule();
         //@ts-ignore

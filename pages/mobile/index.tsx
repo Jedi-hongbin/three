@@ -3,7 +3,7 @@
  * @Author: hongbin
  * @Date: 2023-01-31 14:58:51
  * @LastEditors: hongbin
- * @LastEditTime: 2023-03-17 14:53:46
+ * @LastEditTime: 2023-03-19 12:27:00
  * @Description: 物体跟随 + 碰撞检测
  */
 import Layout from "@/src/components/Three/Layout";
@@ -94,7 +94,7 @@ async function init(helper: ThreeHelper) {
         "linear-gradient(45deg, #fc0000, #3e00fd)";
     const group = new Group();
     helper.add(group);
-    const octreeControls = new OctreeControls();
+    const octreeControls = new OctreeControls({ useWebWorker: true });
 
     // 加载模型
     const gltf = await helper.loadGltf("/models/scene.glb");
@@ -331,6 +331,10 @@ async function init(helper: ThreeHelper) {
 
         // 碰撞的方向 * 深度
         if (result) {
+            // >0 < -1即位头上为斜面可顺斜面弹开
+            if (result.normal.y == -1) {
+                jumpControl.bumpHead();
+            }
             const v = result.normal.multiplyScalar(result.depth);
             v.y -= 0.0001;
             ObserverControl.translate(v);
@@ -363,7 +367,7 @@ async function init(helper: ThreeHelper) {
             !ObserverControl.flipJump &&
             !liftingPlatform.rising
         ) {
-            const fallDistance = fallHelper.computeDistance(delta) / 5;
+            const fallDistance = fallHelper.computeDistance(delta) / 20;
             preFall.set(0, -fallDistance, 0);
             ObserverControl.translate(preFall);
         } else fallHelper.resetTime();
