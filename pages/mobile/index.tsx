@@ -3,7 +3,7 @@
  * @Author: hongbin
  * @Date: 2023-01-31 14:58:51
  * @LastEditors: hongbin
- * @LastEditTime: 2023-03-19 14:24:42
+ * @LastEditTime: 2023-03-19 15:15:39
  * @Description: 物体跟随 + 碰撞检测
  */
 import Layout from "@/src/components/Three/Layout";
@@ -371,9 +371,9 @@ async function init(helper: ThreeHelper) {
         } else fallHelper.resetTime();
         loopAnimationPlayer.update();
         //对移动后的位置进行碰撞检测
-        octreeControls.playerCollisions();
         ObserverControl.syncRotate.update();
         visualImpairment.intersect();
+        octreeControls.playerCollisions();
         ObserverControl.fallDetection();
         ObserverControl.skeletonAnimation.update();
         liftingPlatform.update();
